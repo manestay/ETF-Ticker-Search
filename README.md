@@ -1,4 +1,4 @@
-# ETF-Ticker-Search
+# SPDR-Searcher
 A webpage that searches SPDR funds from given ETF symbol and returns information and graphs.
 The webpage was coded in HTML, PHP, and JavaScript.
 
