@@ -11,7 +11,7 @@
 </head>
 <body>
     ETF Symbol:
-    <form action="/index.html" method="get">
+    <form action="/index.php" method="get">
         <input name="name" type="text"><br>
         <input type="submit" value="Submit">
     </form>
@@ -19,11 +19,12 @@
     <div id="tblDisplay"></div>
     <form action="ETFs.csv" method="get">
         <button type="submit">Download ETFs.csv</button>
-    </form><?php
+    </form>
+    <?php
             $server = 'localhost';
-            $user = 'root';
-            $pass = '';
-            $db = 'etfsdb';
+            $user = 'orbis201_index';
+            $pass = 'php';
+            $db = 'orbis201_etfsdb';
 			$json;
             
             $link = mysqli_connect($server, $user, $pass);
@@ -131,7 +132,7 @@
                         
                         //insert into ETF table
                         $sql = "INSERT INTO ETFs (etfsymbol, holdings, weights)
-                                    VALUES ('{$sym}', '{$hold}', '{$w}')";
+                                    VALUES (\"{$sym}\", \"{$hold}\", \"{$w}\")";
                         mysqli_query($conn, $sql);
                         echo "inserted into the database";                  
                         fclose($f);
