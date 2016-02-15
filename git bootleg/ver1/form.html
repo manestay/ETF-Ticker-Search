@@ -1,0 +1,73 @@
+<html> 
+<head> 
+<title>Very Simple CSV Database</title>
+
+
+
+</head> 
+<body onload="MakeDB()"> 
+ETF Symbol: <input type="text" value="" id="A_Pinfo"> 
+<input type="button" value="Search" onclick="CSVsearch(document.getElementById('A_Pinfo').value)"> 
+<p> 
+<div id="tblDisplay"></div> 
+<form method="get" action="ETFs.csv">
+<button type="submit">Download ETFs.csv</button>
+</form>
+
+<?php
+	while($csv_data = fgetcsv($fp, 1000,",")) 
+{  
+   if ($csv_data[0]==$PO) { 
+      $display .= '<tr>'; 
+      for (i=0; i<count($csv_data); i++) { 
+            $display .= '<td>'.$csv_data[i].'</td>'; 
+      } 
+      $display .= '</tr>'; 
+   } 
+}  
+?>
+
+<script type="text/javascript">
+
+var DB = new Array(); 
+function MakeDB() { DB = CSV.split('\n'); } 
+
+function readTextFile(file)
+{
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, true);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+                var allText = rawFile.responseText;
+                alert(allText);
+            }
+        }
+    }
+    rawFile.send(null);
+}
+
+function CSVsearch(dbInfo) { 
+  var posn = -1; 
+  for (i=0; i<DB.length; i++) { 
+    tmp = DB[i]; 
+    if (tmp.indexOf(dbInfo) != -1) { posn = i; break; }  
+  } 
+  if (posn == -1) { alert('Cannot locate account # or person information from entry value'); } 
+             else { document.getElementById('tblDisplay').innerHTML = displayAsTable(DB[posn]); } 
+} 
+
+function displayAsTable(info) { 
+  var str = '<table border="1" width="50%">'; 
+  var ary = info.split(','); 
+  str += '<tr><th>Acct #</th><th>Person</th><th>Payment</th></tr>'; 
+  str += '<tr><td>'+ary.join('</td><td>')+'</td></tr>'; 
+  str += '</table>'; 
+  return str; 
+} 
+</script> 
+</body> 
+</html>  

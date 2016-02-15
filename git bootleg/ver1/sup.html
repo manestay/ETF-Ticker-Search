@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Food</title>
+<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+</head>
+
+<body>
+    ETF Symbol: <form method="get" action="/sup.html">
+	<input type="text" name="name"><br>
+    <input type="submit" value="Submit">
+	</form>
+    <p></p>
+    <div id="tblDisplay"></div>
+    <form action="ETFs.csv" method="get">
+        <button type="submit">Download ETFs.csv</button>
+    </form>
+	
+	<?php
+		$server = 'localhost';
+		$user = 'root';
+		$pass = '';
+		$db = 'etfsdb';
+		
+		$link = mysqli_connect($server, $user, $pass);
+		if (!$link) {
+		  die('Not connected : ' . mysql_error());
+		}
+
+		// create DB if it doesn't exist
+		$db_selected = mysqli_select_db($link, $db);
+		if (!$db_selected) {
+			// Create database
+			$sql = "CREATE DATABASE etfsdb";
+			if (mysqli_query($link, $sql)) {
+				echo "Database created successfully";
+			}
+			else {
+				echo "Error creating database";
+			}
+		}
+		mysqli_close($link);
+		
+		// Select 1 from table_name will return false if the table does not exist.
+		//$val = mysqli_query('select 1 from `table_name` LIMIT 1');
+
+		//if($val === FALSE) { //create table if doesn't exist
+			$conn = mysqli_connect($server, $user, $pass, $db);
+			$sql = "CREATE TABLE ETFs (
+			id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, 
+			etfsymbol VARCHAR(5) NOT NULL,
+			holdings VARCHAR(1000) NOT NULL,
+			weights VARCHAR(1000)
+			)";
+			mysqli_query($conn, $sql);	 //create the table
+		//}
+				
+		echo "<html><body><table border=\"1\" style=\"width:100%\">\n\n";
+		echo "<tr>\n<th>ETF Symbol</th>\n<th>Top 10 Holdings</th>\n<th>Weights</th>\n</tr>\n";
+		searchDB($conn);
+		
+		function searchweb($conn) {
+			$f = fopen("ETFs_final.csv", "r");
+			while (($line = fgetcsv($f)) !== false) {
+				if (strtoupper($_GET["name"]) == $line[0]) { //match was found
+					echo "<tr>";
+					$i = 0;
+					$sym;
+					$hold;
+					$w;
+					foreach ($line as $cell) {
+						echo "$cell<br>";
+						echo "<td>" . htmlspecialchars($cell) . "</td>";
+						if ($i === 0) {
+							$sym = $cell;
+						}
+						if ($i === 1) {
+							$hold = $cell;
+						}
+						if ($i === 2) {
+							$w = $cell;
+						}
+						$i++;
+					}
+					echo "</tr>\n";
+					
+					//insert into ETF table
+					$sql = "INSERT INTO ETFs (etfsymbol, holdings, weights)
+								VALUES ('{$sym}', '{$hold}', '{$w}')";
+					mysqli_query($conn, $sql);
+					echo "inserted into the database";
+					
+					break; //the line was printed, exit loop
+				}
+			}
+			fclose($f);
+		}
+		
+		function searchDB($conn) {
+			$symbol  = $_GET["name"];
+			$sql = "SELECT * FROM ETFs WHERE etfsymbol = '{$symbol}'";
+			$result = mysqli_query($conn, $sql);
+
+			if (mysqli_num_rows($result) > 0) {
+				echo "match found in database";
+				echo "<tr>";
+				while($row = mysqli_fetch_assoc($result)) {
+					echo "<td>". $row["etfsymbol"]."</td>".
+							 "<td>" . $row["holdings"]. "</td>".
+							 "<td>". $row["weights"]. "<tr>";
+				}
+				echo "</tr>\n";
+			} else {
+				echo "not found in database, searching CSV";
+				searchweb($conn);
+			}
+		}
+		
+		echo "\n</table></body></html>";
+	?>
+</body>
+</html>
